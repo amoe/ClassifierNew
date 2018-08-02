@@ -15,7 +15,8 @@ class Email:
     
     # Read file
     def getFileContents(self, email):
-        f = open(email, 'r', encoding='latin1')
+        fp = '../../Enron/' + email[2:] # change this to location of emails
+        f = open(fp, 'r', encoding='latin1')
         contents = f.read()
         f.close()
         return contents
