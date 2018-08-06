@@ -11,15 +11,20 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+labels=['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
+
 features = ['containsDear', 'lengthUnder12', 'endsComma', 'containsDashes', 
             'endsColon', 'containsForwarded', 'inFirst10Perc', 'inLast10Perc',
             'isSenderEnron', 'prevLineBlank', 'nextLineBlank', 'containsFrom',
             'containsTo', 'containsDate', 'containsSubject', 'containsDoc', 
             'containsWpd', 'containsPdf', 'beginsGreater', 'containsUnderscores',
             'containsNumbers', 'containsAster', 'inAngleBrac', 'inDoubleAngleBrac',
-            'endsFullStop', 'endsExcla', 'containsHi', 'containsHello', 'startsDash']
+            'endsFullStop', 'endsExcla', 'containsHi', 'containsHello', 'startsDash',
+            'prevlineG', 'prevlineB', 'prevlineSE', 'prevlineSO', 'prevlineSA', 
+            'prevlineA', 'prevlineTH','prevlineTG', 'prevlineTB', 'prevlineTSO', 
+            'prevlineTSA', 'prevlineNone']
 
-def getFeatures(email, number):
+def getFeatures(email, number, prevClass):
     lineText = email.getLine(int(number)-1)
     containsDear = 1 if 'dear' in lineText.lower() else 0
     lengthUnder12 = 1 if len(lineText) < 12 else 0
@@ -59,23 +64,34 @@ def getFeatures(email, number):
     containsHello = 1 if 'hello' in lineText.lower() else 0
     startsDash = 1 if lineText.strip().startswith('-') else 0
     
-    return list((containsDear, lengthUnder12, endsComma, containsDashes, endsColon,
+    prevLineClasses = []
+    for lineType in labels:
+        if prevClass == lineType:
+            prevLineClasses.append(1)
+        else: prevLineClasses.append(0)
+    if prevClass == 'none':
+        prevLineClasses.append(1)
+    else: prevLineClasses.append(0)
+    
+    features = list((containsDear, lengthUnder12, endsComma, containsDashes, endsColon,
                  containsForwarded, inFirst10Perc, inLast10Perc, isSenderEnron,
                  prevLineBlank, nextLineBlank, containsFrom, containsTo, containsDate,
                  containsSubject, containsDoc, containsWpd, containsPdf, beginsGreater,
                  containsUnderscores, containsNumbers, containsAster, inAngleBrac,
                  inDoubleAngleBrac, endsFullStop, endsExcla, containsHi, containsHello,
                  startsDash))
+    features.extend(prevLineClasses)
+    
+    return features
     
 with open('lineClasses.txt', 'rb') as f:
     lineClasses = pickle.load(f)
 with open('sampleEmails.txt', 'rb') as f:
     emailsList = pickle.load(f)
     
-labels=['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
+
 
 emailsArray = array(emailsList)
-
 
 def trainTestModel(model, emailsArray):
     kf = KFold(5, True, 1)
@@ -96,18 +112,27 @@ def trainTestModel(model, emailsArray):
         lineIDs = list((testLines))
         X = list()
         Y = list()
+        prevClass = 'none'
         for lineID in lineIDs:
             fp = lineID.split('lineno')[0]
             lineNo = lineID.split('lineno')[1]
+            if int(lineNo) > 1:
+                prevClass = lineClasses[fp+'lineno'+str(int(lineNo)-1)]
+            else: prevClass = 'none'
             email = Email(fp)
-            X.append(getFeatures(email, lineNo))
+            X.append(getFeatures(email, lineNo, prevClass))
             Y.append(lineClasses[lineID])
         model.fit(X, Y)
         
         predictedClasses = {}
+        filepath = 'none'
         for line in testLines:
+            if not line.split('lineno')[0] == filepath:
+                prediction = 'none'
+                filepath = line.split('lineno')[0]
+                
             email = Email(line.split('lineno')[0])
-            testFeatures = getFeatures(email, line.split('lineno')[1])
+            testFeatures = getFeatures(email, line.split('lineno')[1], prediction)
             prediction = model.predict([testFeatures])
             predictedClasses[line] = prediction
             
@@ -135,36 +160,25 @@ def trainTestModel(model, emailsArray):
     print('Overall accuracy: {0}'.format("%.2f" % overallAccuracy))
 
 
+
     
 
 # -------- naive bayes --------
-
 bnb = BernoulliNB()
 trainTestModel(bnb, emailsArray)
 
 
-
-
 # -------- knn --------
-
 knn = KNeighborsClassifier()
 trainTestModel(knn, emailsArray)
 
 
-
-
-
 # -------- logistic regression --------
-
 regr = linear_model.LogisticRegression(C=1e5)
 trainTestModel(regr, emailsArray)
 
 
-
-
 # -------- svm --------
-
 svc = svm.SVC(kernel='linear')
 trainTestModel(svc, emailsArray)
-
 

@@ -232,7 +232,7 @@ trainLines = {}
 testLines = {}
 
 
-kf = KFold(5, True, 4)
+kf = KFold(5, True, 1)
 accuracies = []
 for train_index, test_index in kf.split(emailsArray):
     trainFPs = emailsArray[train_index]
