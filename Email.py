@@ -71,7 +71,7 @@ class Email:
     
     # Get given number line from email body
     def getLine(self, lineNo):
-        return self.bodyLines[int(lineNo)]
+        return self.bodyLines[lineNo]
     
     # Calulate proportion of way given line is through email body
     def getPosition(self, lineNo):
