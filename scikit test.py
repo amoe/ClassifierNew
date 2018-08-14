@@ -201,7 +201,6 @@ def trainTestModel(model, emailsArray):
                             importantFeatures[feature] += 1
                     
                     
-                    print('\n\n\nfeatures this {0} line has that are important features for {1}:\n{2}'.format(lineClasses[key], value[0], lineImpFeatures))
                     
                     # calculate second most likely class
 #                    probabilities = model.predict_proba([getFeatures(em, key.split('lineno')[1])])
@@ -212,6 +211,7 @@ def trainTestModel(model, emailsArray):
 #                    wrongClass[twoLargest[0]] += 1
 #                    secondBest[twoLargest[1]] += 1
                     print('{0} classified as {1}'.format(em.getLine(int(key.split('lineno')[1])-1), value))
+                    print('\n\n\nfeatures this {0} line has that are important features for {1}:\n{2}'.format(lineClasses[key], value[0], lineImpFeatures))
                 
         accuracies.append((correct/float(len(testLines)))*100)
         
