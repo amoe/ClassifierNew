@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import KFold
 from numpy import array
+import settings
 
 def get_top_n_words(corpus, n=None):
     vec = CountVectorizer().fit(corpus)
@@ -17,9 +18,9 @@ def get_top_n_words(corpus, n=None):
     words_freq = sorted(words_freq, key = lambda x: x[1], reverse=True)
     return words_freq[:n]
 
-with open('lineClasses.txt', 'rb') as f:
+with open(settings.LINE_CLASSES_PATH, 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.txt', 'rb') as f:
+with open(settings.SAMPLE_EMAILS_PATH, 'rb') as f:
     emailsList = pickle.load(f)
     
 

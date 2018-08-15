@@ -11,8 +11,10 @@ from sklearn import svm
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-labels=['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
+from collections import defaultdict
+import operator
+from heapq import nlargest
+import settings
 
 features = ['containsDear', 'lengthUnder12', 'endsComma', 'containsDashes', 
             'endsColon', 'containsForwarded', 'inFirst10Perc', 'inLast10Perc',
@@ -21,14 +23,12 @@ features = ['containsDear', 'lengthUnder12', 'endsComma', 'containsDashes',
             'containsWpd', 'containsPdf', 'beginsGreater', 'containsUnderscores',
             'containsNumbers', 'containsAster', 'inAngleBrac', 'inDoubleAngleBrac',
             'endsFullStop', 'endsExcla', 'containsHi', 'containsHello', 'startsDash',
-            'isLineBlank', 'lengthUnder20', 'under4Words', 'endsPunct', 'containsPunct',
+            'isLineBlank', 'lengthUnder20', 'under3Words', 'endsPunct', 'containsPunct',
             'containsThanks', 'containsBest', 'containsSincerely', 'containsRegards',
             'containsAt', 'containsCC', 'lengthOver50', 'containsSent', 'containsForwardSlash',
-            'startsCapLetter', 'prevlineG', 'prevlineB', 'prevlineSE', 'prevlineSO', 
-            'prevlineSA', 'prevlineA', 'prevlineTH','prevlineTG', 'prevlineTB', 
-            'prevlineTSO', 'prevlineTSA', 'prevlineNone']
+            'startsCapLetter']
 
-def getFeatures(email, number, prevClass):
+def getFeatures(email, number):
     lineText = email.getLine(int(number)-1)
     containsDear = 1 if 'dear' in lineText.lower() else 0
     lengthUnder12 = 1 if len(lineText) < 12 else 0
@@ -69,7 +69,7 @@ def getFeatures(email, number, prevClass):
     startsDash = 1 if lineText.strip().startswith('-') else 0
     isLineBlank = 1 if lineText.strip() == '' else 0
     lengthUnder20 = 1 if len(lineText) < 20 else 0
-    under4Words = 1 if len(lineText.split()) < 4 else 0
+    under3Words = 1 if len(lineText.split()) < 3 else 0
     endsPunct = 1 if len(lineText) > 0 and lineText[-1] in '.?-:;!,' else 0
     count = lambda l1, l2: len(list(filter(lambda c: c in l2, l1)))
     containsPunct = 1 if count(lineText, string.punctuation) > 0 else 0
@@ -86,37 +86,26 @@ def getFeatures(email, number, prevClass):
     if len(lineText) > 0:
         startsCapLetter = 1 if lineText[0].isupper() else 0
     
-    prevLineClasses = []
-    for lineType in labels:
-        if prevClass == lineType:
-            prevLineClasses.append(1)
-        else: prevLineClasses.append(0)
-    if prevClass == 'none':
-        prevLineClasses.append(1)
-    else: prevLineClasses.append(0)
-    
-    features = list((containsDear, lengthUnder12, endsComma, containsDashes, endsColon,
+    return list((containsDear, lengthUnder12, endsComma, containsDashes, endsColon,
                  containsForwarded, inFirst10Perc, inLast10Perc, isSenderEnron,
                  prevLineBlank, nextLineBlank, containsFrom, containsTo, containsDate,
                  containsSubject, containsDoc, containsWpd, containsPdf, beginsGreater,
                  containsUnderscores, containsNumbers, containsAster, inAngleBrac,
                  inDoubleAngleBrac, endsFullStop, endsExcla, containsHi, containsHello,
-                 startsDash, isLineBlank, lengthUnder20, under4Words, endsPunct,
+                 startsDash, isLineBlank, lengthUnder20, under3Words, endsPunct,
                  containsPunct, containsThanks, containsBest, containsSincerely,
                  containsRegards, containsAt, containsCC, lengthOver50, containsSent,
                  containsForwardSlash, startsCapLetter))
-    features.extend(prevLineClasses)
     
-    return features
-    
-with open('lineClasses.txt', 'rb') as f:
+with open(settings.LINE_CLASSES_PATH, 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.txt', 'rb') as f:
+with open(settings.SAMPLE_EMAILS_PATH, 'rb') as f:
     emailsList = pickle.load(f)
     
-
+labels=['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
 
 emailsArray = array(emailsList)
+
 
 def trainTestModel(model, emailsArray):
     kf = KFold(5, True, 1)
@@ -127,6 +116,9 @@ def trainTestModel(model, emailsArray):
     y_pred = []
     trainAccuracy = []
     accuracies = []
+    importantFeatures = defaultdict(int)
+    
+    # k fold testing on all data
     for train_index, test_index in kf.split(emailsArray):
         trainFPs = emailsArray[train_index]
         for line in lineList:
@@ -138,29 +130,20 @@ def trainTestModel(model, emailsArray):
         lineIDs = list((testLines))
         X = list()
         Y = list()
-        prevClass = 'none'
+        # create data and target value
         for lineID in lineIDs:
             fp = lineID.split('lineno')[0]
             lineNo = lineID.split('lineno')[1]
-            if int(lineNo) > 1:
-                prevClass = lineClasses[fp+'lineno'+str(int(lineNo)-1)]
-            else: prevClass = 'none'
             email = Email(fp)
-            X.append(getFeatures(email, lineNo, prevClass))
+            X.append(getFeatures(email, lineNo))
             Y.append(lineClasses[lineID])
         model.fit(X, Y)
         
+        # test the model using the data used for training
         trainPredictedClasses = {}
-        filepath = 'none'
         for line in trainLines:
-            if not line.split('lineno')[0] == filepath: # if it is the first line of a new file
-                prediction = 'none'
-                filepath = line.split('lineno')[0]
-#            else:
-#                prediction = trainLines[filepath + 'lineno' + str(int(line.split('lineno')[1])-1)]
-                
             email = Email(line.split('lineno')[0])
-            lineFeatures = getFeatures(email, line.split('lineno')[1], prediction)
+            lineFeatures = getFeatures(email, line.split('lineno')[1])
             prediction = model.predict([lineFeatures])
             trainPredictedClasses[line] = prediction
             
@@ -168,35 +151,79 @@ def trainTestModel(model, emailsArray):
         for key, value in trainPredictedClasses.items():
             if value == lineClasses[key]:
                 correct += 1
-                
         trainAccuracy.append((correct/float(len(trainLines)))*100)
         
+        # test the model using unseen data
         predictedClasses = {}
-        filepath = 'none'
         for line in testLines:
-            if not line.split('lineno')[0] == filepath: # if it is the first line of a new file
-                prediction = 'none'
-                filepath = line.split('lineno')[0]
-#            else: # pass true label to test
-#                prediction = testLines[filepath + 'lineno' + str(int(line.split('lineno')[1])-1)]
-                
             email = Email(line.split('lineno')[0])
-            testFeatures = getFeatures(email, line.split('lineno')[1], prediction)
+            testFeatures = getFeatures(email, line.split('lineno')[1])
+#            print(model.predict_proba([testFeatures])) 
             prediction = model.predict([testFeatures])
-            coeff = model.coef_
             predictedClasses[line] = prediction
             
         correct = 0
+        wrongClass = defaultdict(int)
+        secondBest = defaultdict(int)
+        cl = 'tso'
+        
+        coeff = model.coef_
+        classes = ['a', 'b', 'g', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
+        classToWeights = dict(zip(classes, coeff))
+        
+        # count number of correct classifications
+#        filepath = 'none'
         for key, value in predictedClasses.items():
+            # print list of line classifications for each email
+#            if not key.split('lineno')[0] == filepath:
+#                filepath = key.split('lineno')[0]
+#                print('\n\n\nNEW EMAIL\n')
+#            print(value)
             y_true.append(lineClasses[key])
             y_pred.append(value)
             if value == lineClasses[key]:
                 correct += 1
+            else:
+                if lineClasses[key] == cl and value == 'tb': # the real class was cl and the predicted class was this
+                    
+                    em = Email(key.split('lineno')[0])
+                    
+                    # get weights of features for the predicted class
+                    weights = classToWeights[value[0]]
+                    featuresToWeights = dict(zip(features, weights))
+                    # get the 10 most important features for the predicted class
+                    impFeatures = nlargest(10, featuresToWeights, key=featuresToWeights.get)
+                    lineFeatures = dict(zip(features, getFeatures(em, key.split('lineno')[1])))
+                    lineImpFeatures = []
+                    
+                    for feature in impFeatures:
+                        if lineFeatures[feature] == 1:
+                            lineImpFeatures.append(feature)
+                            importantFeatures[feature] += 1
+                    
+                    
+                    
+                    # calculate second most likely class
+#                    probabilities = model.predict_proba([getFeatures(em, key.split('lineno')[1])])
+#                    i=0
+#                    classes = ['a', 'b', 'g', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
+#                    classProbs = dict(zip(classes, probabilities[0]))
+#                    twoLargest = nlargest(2, classProbs, key=classProbs.get)
+#                    wrongClass[twoLargest[0]] += 1
+#                    secondBest[twoLargest[1]] += 1
+                    print('{0} classified as {1}'.format(em.getLine(int(key.split('lineno')[1])-1), value))
+                    print('\n\n\nfeatures this {0} line has that are important features for {1}:\n{2}'.format(lineClasses[key], value[0], lineImpFeatures))
                 
         accuracies.append((correct/float(len(testLines)))*100)
         
+    print(importantFeatures)
+        
     overallTrainAccuracy = sum(trainAccuracy)/len(trainAccuracy)
     overallAccuracy = sum(accuracies)/len(accuracies)
+#    sortedWrongClass = sorted(wrongClass.items(), key=operator.itemgetter(1))
+#    sortedSecondBest = sorted(secondBest.items(), key=operator.itemgetter(1))
+    
+#    print('\nincorrect {0} predictions:\n{1}\n\nsecond best predictions for those:\n{2}'.format(cl, sortedWrongClass, sortedSecondBest))
     
     cm = confusion_matrix(y_true, y_pred, labels)
     ax = plt.subplot()
@@ -210,28 +237,52 @@ def trainTestModel(model, emailsArray):
     plt.show()
     print('Overall training accuracy: {0}'.format("%.2f" % overallTrainAccuracy))
     print('Overall test accuracy: {0}'.format("%.2f" % overallAccuracy))
-#    print(coeff)
-
+    coeff = model.coef_
+    
+    return coeff
 
 
     
 
 # -------- naive bayes --------
+
 #bnb = BernoulliNB()
 #trainTestModel(bnb, emailsArray)
 
 
+
+
 # -------- knn --------
+
 #knn = KNeighborsClassifier()
 #trainTestModel(knn, emailsArray)
 
 
+
+
+
 # -------- logistic regression --------
+
 regr = linear_model.LogisticRegression(C=1e5)
-trainTestModel(regr, emailsArray)
+coeff = trainTestModel(regr, emailsArray)
+
+# print weights for each class/feature pair
+#i=0
+#for label in labels:
+#    if not label == 'sa':
+#        j=0
+#        for feature in features:
+#            if abs(coeff[i][j]) >= 1:
+#                print('feature {0} class {1}: {2}'.format(feature, label, coeff[i][j]))
+#            j+=1
+#        i+=1
+
+
 
 
 # -------- svm --------
+
 #svc = svm.SVC(kernel='linear')
 #trainTestModel(svc, emailsArray)
+
 

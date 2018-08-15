@@ -1,6 +1,8 @@
 from datetime import datetime
 import pytz
 import re
+import settings
+import os
 
 class Email:
     def __init__(self, filepath):
@@ -15,7 +17,7 @@ class Email:
     
     # Read file
     def getFileContents(self, email):
-        fp = '../../Enron/' + email[2:] # change this to location of emails
+        fp = os.path.join(settings.CORPUS_PATH, email[2:])
         f = open(fp, 'r', encoding='latin1')
         contents = f.read()
         f.close()

@@ -8,13 +8,13 @@ import seaborn as sns
 from sklearn.model_selection import KFold
 from numpy import array
 import re, string, pickle
+import settings
 
 class Classifier:
-    
     def __init__(self):
-        with open('../lineClasses.txt', 'rb') as f:
+        with open(settings.LINE_CLASSES_PATH, 'rb') as f:
             self.lineClasses = pickle.load(f)
-        with open('../sampleEmails.txt', 'rb') as f:
+        with open(settings.SAMPLE_EMAILS_PATH, 'rb') as f:
             self.emailsList = pickle.load(f)
         self.model = linear_model.LogisticRegression(C=1e5)
         self.overallAccuracy = 0
@@ -171,4 +171,6 @@ class Classifier:
             predictions.append(prediction)
 #            print('{0} === {1}'.format(lineText, prediction))
         return predictions
-            
+
+obj = Classifier()
+obj.trainModel()            

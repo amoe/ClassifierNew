@@ -6,6 +6,7 @@ import pickle
 from Email import Email
 from sklearn.model_selection import KFold
 from numpy import array
+import settings
 
 class NBClassifier:
     
@@ -220,9 +221,9 @@ class NBClassifier:
         
       
 nb = NBClassifier()
-with open('lineClasses.txt', 'rb') as f:
+with open(settings.LINE_CLASSES_PATH, 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.txt', 'rb') as f:
+with open(settings.SAMPLE_EMAILS_PATH, 'rb') as f:
     emailsList = pickle.load(f)
 
 emailsArray = array(emailsList)
