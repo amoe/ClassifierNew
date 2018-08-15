@@ -10,3 +10,7 @@ sampleEmails and lineClasses are in pickle format.  Use
 `python3 -m pickle <file>` to inspect them.
 
 lineClasses contains a giant dictionary mapping 
+
+Bag of words is the simplest model.
+
+
