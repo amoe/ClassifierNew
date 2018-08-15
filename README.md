@@ -13,4 +13,6 @@ lineClasses contains a giant dictionary mapping
 
 Bag of words is the simplest model.
 
+You can find the actual path of the mail defined in the `Email` class.
+
 
