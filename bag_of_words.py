@@ -17,9 +17,9 @@ def get_top_n_words(corpus, n=None):
     words_freq = sorted(words_freq, key = lambda x: x[1], reverse=True)
     return words_freq[:n]
 
-with open('lineClasses.txt', 'rb') as f:
+with open('lineClasses.pkl', 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.txt', 'rb') as f:
+with open('sampleEmails.pkl', 'rb') as f:
     emailsList = pickle.load(f)
     
 

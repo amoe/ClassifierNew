@@ -109,9 +109,9 @@ def getFeatures(email, number, prevClass):
     
     return features
     
-with open('lineClasses.txt', 'rb') as f:
+with open('lineClasses.pkl', 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.txt', 'rb') as f:
+with open('sampleEmails.pkl', 'rb') as f:
     emailsList = pickle.load(f)
     
 

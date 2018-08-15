@@ -96,9 +96,9 @@ def getFeatures(email, number):
                  containsRegards, containsAt, containsCC, lengthOver50, containsSent,
                  containsForwardSlash, startsCapLetter))
     
-with open('lineClasses.txt', 'rb') as f:
+with open('lineClasses.pkl', 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.txt', 'rb') as f:
+with open('sampleEmails.pkl', 'rb') as f:
     emailsList = pickle.load(f)
     
 labels=['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']

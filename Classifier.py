@@ -12,9 +12,9 @@ import re, string, pickle
 class Classifier:
     
     def __init__(self):
-        with open('../lineClasses.txt', 'rb') as f:
+        with open('../lineClasses.pkl', 'rb') as f:
             self.lineClasses = pickle.load(f)
-        with open('../sampleEmails.txt', 'rb') as f:
+        with open('../sampleEmails.pkl', 'rb') as f:
             self.emailsList = pickle.load(f)
         self.model = linear_model.LogisticRegression(C=1e5)
         self.overallAccuracy = 0
