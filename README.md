@@ -27,3 +27,4 @@ https://www.cs.cmu.edu/~enron/enron_mail_20150507.tar.gz
 
 This is the canonical version of the dataset as of this writing (2018-08-15).
 
+In `settings.py` you can find the location of the data set.
