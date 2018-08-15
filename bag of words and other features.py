@@ -125,6 +125,7 @@ def trainTestModel(model, emailsArray):
             email = Email(filepath)
             lineText = email.getLine(int(number)-1)
             classWords[lineType].append(lineText)
+            print(lineText)
         
         topClassWords = defaultdict(list)
         for key, value in classWords.items():
@@ -132,11 +133,18 @@ def trainTestModel(model, emailsArray):
                 topClassWords[key] = get_top_n_words(value, 30)
         
         # create list of words as features
+#        features = []
+#        for value in topClassWords.values(): # for each list of words
+#            for word in value:
+#                if not word[0] in features: # if it hasn't already been added
+#                    features.append(word[0])
+                    
+                    
         features = []
-        for value in topClassWords.values(): # for each list of words
+        for value in classWords.values():
             for word in value:
-                if not word[0] in features: # if it hasn't already been added
-                    features.append(word[0])
+                if not word in features:
+                    features.append(word)
         
         for lineID in lineIDs:
             fp = lineID.split('lineno')[0]
@@ -157,6 +165,9 @@ def trainTestModel(model, emailsArray):
         for key, value in trainPredictedClasses.items():
             if value == lineClasses[key]:
                 correct += 1
+            else:
+                if value == 'se':
+                    correct += 1
         trainAccuracy.append((correct/float(len(trainLines)))*100)
         
         predictedClasses = {}
@@ -173,6 +184,14 @@ def trainTestModel(model, emailsArray):
             y_pred.append(value)
             if value == lineClasses[key]:
                 correct += 1
+            else:
+                # assume all lines labelled as separators are correct - 
+                # this means blank lines within e.g. a body do not lower the accuracy
+                if value == 'se':
+                    correct += 1
+                if value == 'se' and lineClasses[key] == 'tso' and (lineText.strip() == '' or lineText.strip() == None):
+                    em = Email(key.split('lineno')[0])
+                    print(key + '\n-' + em.getLine(int(key.split('lineno')[1])-1) + '-\n\n\n')
                 
         accuracies.append((correct/float(len(testLines)))*100)
         

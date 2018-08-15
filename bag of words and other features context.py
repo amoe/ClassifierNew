@@ -183,6 +183,10 @@ def trainTestModel(model, emailsArray):
             y_pred.append(value)
             if value == lineClasses[key]:
                 correct += 1
+            else:
+                if value == 'se' and lineClasses[key] == 'b':
+                    em = Email(key.split('lineno')[0])
+                    print(key + '\n' + em.getLine(int(key.split('lineno')[1])-1) + '\n\n\n')
                 
         accuracies.append((correct/float(len(testLines)))*100)
         

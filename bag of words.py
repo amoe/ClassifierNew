@@ -81,11 +81,17 @@ def trainTestModel(model, emailsArray):
 #        print(topClassWords)
         
         # create list of words as features
+#        features = []
+#        for value in topClassWords.values(): # for each list of words
+#            for word in value:
+#                if not word[0] in features: # if it hasn't already been added
+#                    features.append(word[0])
+                    
         features = []
-        for value in topClassWords.values(): # for each list of words
+        for value in classWords.values():
             for word in value:
-                if not word[0] in features: # if it hasn't already been added
-                    features.append(word[0])
+                if not word in features:
+                    features.append(word)
                     
         
         for lineID in lineIDs:
