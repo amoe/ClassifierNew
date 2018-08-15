@@ -11,8 +11,11 @@ import re, string, pickle
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
+import pprint
+import settings
 
 def get_top_n_words(corpus, n=None):
+    pprint.pprint(corpus)
     vec = CountVectorizer().fit(corpus)
     bag_of_words = vec.transform(corpus)
     sum_words = bag_of_words.sum(axis=0)
@@ -20,9 +23,9 @@ def get_top_n_words(corpus, n=None):
     words_freq = sorted(words_freq, key = lambda x: x[1], reverse=True)
     return words_freq[:n]
 
-with open('lineClasses.pkl', 'rb') as f:
+with open(settings.LINE_CLASSES_PATH, 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.pkl', 'rb') as f:
+with open(settings.SAMPLE_EMAILS_PATH, 'rb') as f:
     emailsList = pickle.load(f)
     
 
@@ -129,6 +132,8 @@ def trainTestModel(model, emailsArray):
         
         topClassWords = defaultdict(list)
         for key, value in classWords.items():
+            print("KEY is " + key)
+            pprint.pprint(value)
             if not key == 'se':
                 topClassWords[key] = get_top_n_words(value, 30)
         

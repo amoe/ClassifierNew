@@ -11,6 +11,7 @@ from sklearn import svm
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
+import settings
 
 labels=['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
 
@@ -109,11 +110,10 @@ def getFeatures(email, number, prevClass):
     
     return features
     
-with open('lineClasses.pkl', 'rb') as f:
+with open(settings.LINE_CLASSES_PATH, 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.pkl', 'rb') as f:
+with open(settings.SAMPLE_EMAILS_PATH, 'rb') as f:
     emailsList = pickle.load(f)
-    
 
 
 emailsArray = array(emailsList)
