@@ -28,3 +28,10 @@ https://www.cs.cmu.edu/~enron/enron_mail_20150507.tar.gz
 This is the canonical version of the dataset as of this writing (2018-08-15).
 
 In `settings.py` you can find the location of the data set.
+
+## Running
+
+Running `bag_of_words.py` will exercise a model by coercing the training set into
+lists _X_,_Y_.  This uses the `sklearn.linear_model.LogisticRegression` ML
+approach.  It will do the whole lot: training the model, testing it, and
+plotting the results.
