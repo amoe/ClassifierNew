@@ -14,6 +14,7 @@ import seaborn as sns
 from collections import defaultdict
 import operator
 from heapq import nlargest
+import settings
 
 features = ['containsDear', 'lengthUnder12', 'endsComma', 'containsDashes', 
             'endsColon', 'containsForwarded', 'inFirst10Perc', 'inLast10Perc',
@@ -96,9 +97,9 @@ def getFeatures(email, number):
                  containsRegards, containsAt, containsCC, lengthOver50, containsSent,
                  containsForwardSlash, startsCapLetter))
     
-with open('lineClasses.pkl', 'rb') as f:
+with open(settings.LINE_CLASSES_PATH, 'rb') as f:
     lineClasses = pickle.load(f)
-with open('sampleEmails.pkl', 'rb') as f:
+with open(settings.SAMPLE_EMAILS_PATH, 'rb') as f:
     emailsList = pickle.load(f)
     
 labels=['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
