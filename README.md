@@ -11,13 +11,12 @@ sampleEmails and lineClasses are in pickle format.  Use
 
 lineClasses contains a giant dictionary mapping 
 
-Bag of words is the simplest model.
-
 You can find the actual path of the mail defined in the `Email` class.
 
 Dependencies:
 
 `seaborn` (or `python3-seaborn` in debian) `0.8.0`
+`sklearn` 0.19.1
 
 ## Data set 
 
@@ -29,23 +28,20 @@ This is the canonical version of the dataset as of this writing (2018-08-15).
 
 In `settings.py` you can find the location of the data set.
 
-## Running
+## Notes
 
 Running `bag_of_words.py` will exercise a model by coercing the training set into
 lists _X_,_Y_.  This uses the `sklearn.linear_model.LogisticRegression` ML
 approach.  It will do the whole lot: training the model, testing it, and
 plotting the results.
 
-
-context incl classification of previous
-
-
 NBClassifier - lolch's hand-implementation of naive bayes classifier
+
 'Context' means adding a 'context window' that incorporates the result of the
 classification of the previous line into the current classification.  Sort of
 a 1-element recurrence.
 
-'Other Features' refers to the features that are extractible by the features
+'Other Features' refers to the features that are extractible by the `getFeatures`
 method.
 
 `scikit_test` and `scikit_with_context` are the result of porting the code
@@ -69,5 +65,3 @@ The class names are defined as such:
     # tb = body within thread
     # tso = signoff within thread
     # tsa = signature within thread
-
-
