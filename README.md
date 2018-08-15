@@ -15,4 +15,15 @@ Bag of words is the simplest model.
 
 You can find the actual path of the mail defined in the `Email` class.
 
+Dependencies:
+
+`seaborn` (or `python3-seaborn` in debian) `0.8.0`
+
+## Data set 
+
+You can find the data set at the following link:
+
+https://www.cs.cmu.edu/~enron/enron_mail_20150507.tar.gz
+
+This is the canonical version of the dataset as of this writing (2018-08-15).
 
