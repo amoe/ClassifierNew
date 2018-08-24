@@ -99,7 +99,7 @@ def getFeatures(email, number, features):
     return lineFeatures
 
 def trainTestModel(model, emailsArray):
-    kf = KFold(5, True, 1)
+    kf = KFold(5, True, 7)
     lineList = list((lineClasses))
     trainLines = {}
     testLines = {}
@@ -110,13 +110,15 @@ def trainTestModel(model, emailsArray):
     
     for train_index, test_index in kf.split(emailsArray):
         trainFPs = emailsArray[train_index]
+        trainLines = {}
+        testLines = {}
         for line in lineList:
             fp = line.split('lineno')[0]
             if fp in trainFPs:
                 trainLines[line] = lineClasses[line]
             else:
                 testLines[line] = lineClasses[line]
-        lineIDs = list((testLines))
+        lineIDs = list((trainLines))
         X = list()
         Y = list()
         
@@ -130,13 +132,13 @@ def trainTestModel(model, emailsArray):
             classWords[lineType].append(lineText)
             print(lineText)
         
-        topClassWords = defaultdict(list)
-        for key, value in classWords.items():
-            print("KEY is " + key)
-            pprint.pprint(value)
-            if not key == 'se':
-                topClassWords[key] = get_top_n_words(value, 30)
-        
+#        topClassWords = defaultdict(list)
+#        for key, value in classWords.items():
+#            print("KEY is " + key)
+#            pprint.pprint(value)
+#            if not key == 'se':
+#                topClassWords[key] = get_top_n_words(value, 30)
+#        
         # create list of words as features
 #        features = []
 #        for value in topClassWords.values(): # for each list of words

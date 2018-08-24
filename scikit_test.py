@@ -167,9 +167,9 @@ def trainTestModel(model, emailsArray):
         secondBest = defaultdict(int)
         cl = 'tso'
         
-        coeff = model.coef_
+#        coeff = model.coef_
         classes = ['a', 'b', 'g', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
-        classToWeights = dict(zip(classes, coeff))
+#        classToWeights = dict(zip(classes, coeff))
         
         # count number of correct classifications
 #        filepath = 'none'
@@ -189,17 +189,17 @@ def trainTestModel(model, emailsArray):
                     em = Email(key.split('lineno')[0])
                     
                     # get weights of features for the predicted class
-                    weights = classToWeights[value[0]]
-                    featuresToWeights = dict(zip(features, weights))
-                    # get the 10 most important features for the predicted class
-                    impFeatures = nlargest(10, featuresToWeights, key=featuresToWeights.get)
-                    lineFeatures = dict(zip(features, getFeatures(em, key.split('lineno')[1])))
-                    lineImpFeatures = []
-                    
-                    for feature in impFeatures:
-                        if lineFeatures[feature] == 1:
-                            lineImpFeatures.append(feature)
-                            importantFeatures[feature] += 1
+#                    weights = classToWeights[value[0]]
+#                    featuresToWeights = dict(zip(features, weights))
+#                    # get the 10 most important features for the predicted class
+#                    impFeatures = nlargest(10, featuresToWeights, key=featuresToWeights.get)
+#                    lineFeatures = dict(zip(features, getFeatures(em, key.split('lineno')[1])))
+#                    lineImpFeatures = []
+#                    
+#                    for feature in impFeatures:
+#                        if lineFeatures[feature] == 1:
+#                            lineImpFeatures.append(feature)
+#                            importantFeatures[feature] += 1
                     
                     
                     
@@ -211,12 +211,12 @@ def trainTestModel(model, emailsArray):
 #                    twoLargest = nlargest(2, classProbs, key=classProbs.get)
 #                    wrongClass[twoLargest[0]] += 1
 #                    secondBest[twoLargest[1]] += 1
-                    print('{0} classified as {1}'.format(em.getLine(int(key.split('lineno')[1])-1), value))
-                    print('\n\n\nfeatures this {0} line has that are important features for {1}:\n{2}'.format(lineClasses[key], value[0], lineImpFeatures))
+#                    print('{0} classified as {1}'.format(em.getLine(int(key.split('lineno')[1])-1), value))
+#                    print('\n\n\nfeatures this {0} line has that are important features for {1}:\n{2}'.format(lineClasses[key], value[0], lineImpFeatures))
                 
         accuracies.append((correct/float(len(testLines)))*100)
         
-    print(importantFeatures)
+#    print(importantFeatures)
         
     overallTrainAccuracy = sum(trainAccuracy)/len(trainAccuracy)
     overallAccuracy = sum(accuracies)/len(accuracies)
@@ -237,25 +237,25 @@ def trainTestModel(model, emailsArray):
     plt.show()
     print('Overall training accuracy: {0}'.format("%.2f" % overallTrainAccuracy))
     print('Overall test accuracy: {0}'.format("%.2f" % overallAccuracy))
-    coeff = model.coef_
-    
-    return coeff
+#    coeff = model.coef_
+#    
+#    return coeff
 
 
     
 
 # -------- naive bayes --------
 
-#bnb = BernoulliNB()
-#trainTestModel(bnb, emailsArray)
+bnb = BernoulliNB()
+trainTestModel(bnb, emailsArray)
 
 
 
 
 # -------- knn --------
 
-#knn = KNeighborsClassifier()
-#trainTestModel(knn, emailsArray)
+knn = KNeighborsClassifier()
+trainTestModel(knn, emailsArray)
 
 
 
@@ -264,7 +264,7 @@ def trainTestModel(model, emailsArray):
 # -------- logistic regression --------
 
 regr = linear_model.LogisticRegression(C=1e5)
-coeff = trainTestModel(regr, emailsArray)
+trainTestModel(regr, emailsArray)
 
 # print weights for each class/feature pair
 #i=0
@@ -282,7 +282,7 @@ coeff = trainTestModel(regr, emailsArray)
 
 # -------- svm --------
 
-#svc = svm.SVC(kernel='linear')
-#trainTestModel(svc, emailsArray)
+svc = svm.SVC(kernel='linear')
+trainTestModel(svc, emailsArray)
 
 

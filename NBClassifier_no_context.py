@@ -19,7 +19,7 @@ class NBClassifier:
                          'containsWpd', 'containsPdf', 'beginsGreater', 'containsUnderscores',
                          'containsNumbers', 'containsAster', 'inAngleBrac', 'inDoubleAngleBrac',
                          'endsFullStop', 'endsExcla', 'containsHi', 'containsHello',
-                         'startsDash'] # add prevClass feature
+                         'startsDash']
         self.dataMeans = pd.DataFrame()
         # The likelihood of each line class
         self.probClass = defaultdict(int)

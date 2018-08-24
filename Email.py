@@ -62,8 +62,9 @@ class Email:
         date_eastern = date_pacific.astimezone(pytz.timezone('US/Eastern'))
         return date_eastern
     
+    # Return name of sender. Name is before first '.', '@', or space (whichever is shorter)
     def getSenderFirstName(self):
-        sender = self.getFeature('From', self.contents)
+        sender = self.getFeature('From')
         
         sendername = sender.split('.')[0]
         sendername = sendername.split('@')[0]
@@ -71,7 +72,22 @@ class Email:
         
         return sendername
     
-    # Get given number line from email body
+    # Return list of names of recipients (if there are any)
+    def getRecipientFirstNames(self):
+        toText = self.getFeature('To')
+        
+        recipientList = []
+        if toText: # if there is a recipient listed
+            recipients = toText.split(',') # create a list of all recipients
+            for recipient in recipients:
+                recipient = recipient.strip() # remove whitespace
+                recipientname = recipient.split('.')[0]
+                recipientname = recipientname.split('@')[0]
+                recipientname = recipientname.split()[0]
+                recipientList.append(recipientname)
+                
+        return recipientList
+    
     # Get given number line from email body
     def getLine(self, lineNo):
         number = int(lineNo)-1

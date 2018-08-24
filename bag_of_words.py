@@ -54,13 +54,17 @@ def trainTestModel(model, emailsArray):
     
     for train_index, test_index in kf.split(emailsArray):
         trainFPs = emailsArray[train_index]
+        
+        trainLines = {}
+        testLines = {}
+        
         for line in lineList:
             fp = line.split('lineno')[0]
             if fp in trainFPs:
                 trainLines[line] = lineClasses[line]
             else:
                 testLines[line] = lineClasses[line]
-        lineIDs = list((testLines))
+        lineIDs = list((trainLines))
         X = list()
         Y = list()
         
@@ -74,10 +78,10 @@ def trainTestModel(model, emailsArray):
             lineText = email.getLine(int(number)-1)
             classWords[lineType].append(lineText)
         
-        topClassWords = defaultdict(list)
-        for key, value in classWords.items():
-            if not key == 'se':
-                topClassWords[key] = get_top_n_words(value, 20)
+#        topClassWords = defaultdict(list)
+#        for key, value in classWords.items():
+#            if not key == 'se':
+#                topClassWords[key] = get_top_n_words(value, 20)
                 
 #        print(topClassWords)
         

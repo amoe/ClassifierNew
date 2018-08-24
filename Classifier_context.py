@@ -19,8 +19,9 @@ class Classifier:
         self.model = linear_model.LogisticRegression(C=1e5)
         self.overallAccuracy = 0
         self.words = []
+        self.hasContext = 'yes'
         
-    def getFeatures(self, email, number, words):
+    def getFeatures(self, email, number, words, prevClass):
         lineText = email.getLine(number)
         lineFeatures = []
         
@@ -30,6 +31,8 @@ class Classifier:
         for word in splitLine:
             if word in words:
                 wordsInList += 1
+            else:
+                print(word)
                 
 #        percentageVocab = (wordsInList/wordsInLine)*100
 #        if wordsInLine > 0:
@@ -79,12 +82,22 @@ class Classifier:
         if len(lineText) > 0:
             startsCapLetter = 1 if lineText[0].isupper() else 0
             
+        prevLineClasses = []
+        for lineType in ['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']:
+            if prevClass == lineType:
+                prevLineClasses.append(1)
+            else: prevLineClasses.append(0)
+        if prevClass == 'none':
+            prevLineClasses.append(1)
+        else: prevLineClasses.append(0)
+            
         lineFeatures.extend([lengthUnder12, endsComma, containsDashes, endsColon, inFirst10Perc,
                          inLast10Perc, prevLineBlank, nextLineBlank, beginsGreater,
                          containsUnderscores, containsNumbers, containsAster, inAngleBrac,
                          inDoubleAngleBrac, endsFullStop, endsExcla, startsDash,
                          isLineBlank, lengthUnder20, under3Words, endsPunct, containsPunct,
                          containsAt, lengthOver50, containsForwardSlash, startsCapLetter])
+        lineFeatures.extend(prevLineClasses)
     
         return lineFeatures, wordsInList, wordsInLine
     
@@ -150,8 +163,11 @@ class Classifier:
                 filepath = lineID.split('lineno')[0]
                 number = lineID.split('lineno')[1]
                 email = Email(filepath)
+                if int(number) > 1:
+                    prevClass = self.lineClasses[filepath+'lineno'+str(int(number)-1)]
+                else: prevClass = 'none'
 #                X.append(self.getFeatures(email, number, self.words))
-                lineFeatures, wordsInList, wordsInLine = self.getFeatures(email, number, words)
+                lineFeatures, wordsInList, wordsInLine = self.getFeatures(email, number, words, prevClass)
                 trainListWords += wordsInList
                 trainWordsTotal += wordsInLine
                 X.append(lineFeatures)
@@ -159,10 +175,14 @@ class Classifier:
             self.model.fit(X, Y)
             
             predictedClasses = {}
+            filepath = 'none'
             for line in testLines:
+                if not line.split('lineno')[0] == filepath:
+                    prediction = 'none'
+                    filepath = line.split('lineno')[0]
                 email = Email(line.split('lineno')[0])
 #                lineFeatures = self.getFeatures(email, line.split('lineno')[1], self.words)
-                lineFeatures, wordsInList, wordsInLine = self.getFeatures(email, line.split('lineno')[1], words)
+                lineFeatures, wordsInList, wordsInLine = self.getFeatures(email, line.split('lineno')[1], words, prediction)
                 testListWords += wordsInList
                 testWordsTotal += wordsInLine
                 prediction = self.model.predict([lineFeatures])
@@ -196,9 +216,8 @@ class Classifier:
         predictions = []
         for i in range(1, email.getNoLines()+1):
             lineText = email.getLine(i)
-            lineFeatures, wordsInList, wordsInLine = self.getFeatures(email, i, self.words)
+            lineFeatures = self.getFeatures(email, i, self.words)
             prediction = self.model.predict([lineFeatures])
-#            prediction = self.model.predict(lineFeatures)
             predictions.append(prediction)
 #            print('{0} === {1}'.format(lineText, prediction))
         return predictions

@@ -107,13 +107,17 @@ def trainTestModel(model, emailsArray):
     
     for train_index, test_index in kf.split(emailsArray):
         trainFPs = emailsArray[train_index]
+        
+        trainLines = {}
+        testLines = {}
+        
         for line in lineList:
             fp = line.split('lineno')[0]
             if fp in trainFPs:
                 trainLines[line] = lineClasses[line]
             else:
                 testLines[line] = lineClasses[line]
-        lineIDs = list((testLines))
+        lineIDs = list((trainLines))
         X = list()
         Y = list()
         prevClass = 'none'
@@ -126,17 +130,25 @@ def trainTestModel(model, emailsArray):
             lineText = email.getLine(int(number)-1)
             classWords[lineType].append(lineText)
         
-        topClassWords = defaultdict(list)
-        for key, value in classWords.items():
-            if not key == 'se':
-                topClassWords[key] = get_top_n_words(value, 20)
+#        topClassWords = defaultdict(list)
+#        for key, value in classWords.items():
+#            if not key == 'se':
+#                topClassWords[key] = get_top_n_words(value, 20)
         
         # create list of words as features
+#        features = []
+#        for value in classWords.values(): # for each list of words
+#            for word in value:
+#                if not word[0] in features: # if it hasn't already been added
+#                    features.append(word[0])
+        
+        
         features = []
-        for value in topClassWords.values(): # for each list of words
+        for value in classWords.values():
             for word in value:
-                if not word[0] in features: # if it hasn't already been added
-                    features.append(word[0])
+                if not word in features:
+                    features.append(word)
+        
         
         for lineID in lineIDs:
             fp = lineID.split('lineno')[0]
