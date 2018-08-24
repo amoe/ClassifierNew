@@ -91,8 +91,8 @@ class Classifier:
     def trainModel(self):
         kf = KFold(5, True, 7)
         lineList = list((self.lineClasses))
-#        y_true = []
-#        y_pred = []
+        y_true = []
+        y_pred = []
         accuracies = []
         emailsArray = array(self.emailsList)
         trainListWords = 0
@@ -171,8 +171,8 @@ class Classifier:
             correct = 0
             
             for key, value in predictedClasses.items():
-#                y_true.append(lineClasses[key])
-#                y_pred.append(value)
+                y_true.append(self.lineClasses[key])
+                y_pred.append(value)
                 if value == self.lineClasses[key]:
                     correct += 1
                 else:
@@ -188,6 +188,17 @@ class Classifier:
 #            print('{0}% of training words in list'.format(trainVocabPerc))
 #            print('{0}% of testing words in list'.format(testVocabPerc))
             
+        labels = ['a', 'b', 'g', 'sa', 'se', 'so', 'tb', 'tg', 'th', 'tsa', 'tso']
+        cm = confusion_matrix(y_true, y_pred, labels)
+        ax = plt.subplot()
+        sns.heatmap(cm, annot=True, ax=ax, fmt='g')
+        ax.set_xlabel('Predicted labels')
+        ax.set_ylabel('True labels')
+        ax.set_title('Confusion matrix')
+        ax.xaxis.set_ticklabels(labels)
+        ax.yaxis.set_ticklabels(labels)
+        plt.show()
+        
         self.overallAccuracy = sum(accuracies)/len(accuracies)
         print('Overall accuracy: {0}'.format(self.overallAccuracy))
     
@@ -195,12 +206,31 @@ class Classifier:
         email = Email(filepath)
         predictions = []
         for i in range(1, email.getNoLines()+1):
-            lineText = email.getLine(i)
             lineFeatures, wordsInList, wordsInLine = self.getFeatures(email, i, self.words)
             prediction = self.model.predict([lineFeatures])
-#            prediction = self.model.predict(lineFeatures)
             predictions.append(prediction)
-#            print('{0} === {1}'.format(lineText, prediction))
+            
+            
+            # Replace 'se' labels surrounded by 2 lines with label x with x
+#            i=0
+#            for prediction in predictions:
+#                if prediction[0] == 'se':
+#                    prevInd = i
+#                    prevLine = 'se'
+#                    while predictions[prevInd] == 'se' and prevInd > 0:
+#                        prevInd = i
+#                        prevLine = predictions[prevInd]
+#                    nextInd = i
+#                    nextLine = 'se'
+#                    while nextInd < (len(predictions)-1) and predictions[nextInd] == 'se':
+#                        nextInd += 1
+#                        nextLine = predictions[nextInd]
+#                    if prevLine == nextLine:
+#                        for j in range(prevInd+1, nextInd):
+#                            predictions[j] = prevLine
+#                i += 1
+            
+            
         return predictions
 
 #obj = Classifier()
